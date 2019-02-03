@@ -1,0 +1,161 @@
+---
+title: "Price-Model"
+author: "aparna"
+date: "February 3, 2019"
+output: html_document
+---
+
+
+## R Markdown - price predicting model for BMW SUV
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Call to dataset
+```{r }
+autos <- read.csv("C:/Users/Public/Documents/autos.csv")
+dg=autos
+subdg=subset(dg,brand=="bmw" & vehicleType=="suv")
+summary(subdg)
+```
+
+## Choosing vehicle type and brand
+```{r}
+library(ggplot2)
+ggplot(data = dg, aes(x = vehicleType)) +geom_bar(fill = 'blue') + coord_flip()
+ggplot(data = dg, aes(x = brand)) +geom_bar(fill = 'blue') + coord_flip()
+
+```
+
+## histogram for Price and predicting variables
+```{r}
+library(ggplot2)
+ggplot(subdg, aes(price)) + geom_freqpoly(binwidth = 1000)
+ggplot(subdg, aes(yearOfRegistration))+ geom_freqpoly(binwidth = 10)
+ggplot(subdg, aes(kilometer)) + geom_freqpoly(binwidth = 1000)
+ggplot(subdg, aes(powerPS)) + geom_freqpoly(binwidth = 1000)
+```
+
+## Descriptive Ststistics
+
+```{r }
+price=subdg$price
+sd(price)
+max(price)-min(price)
+names(price) [ price==max(price)]
+max(price)
+min(price)
+
+```
+
+## box Plots for descriptive statistics
+```{r}
+
+boxplot(subdg$price,col="red",outline = FALSE)
+boxplot(subdg$powerPS,col="yellow",outline = FALSE)
+boxplot(subdg$kilometer,col="green",outline = FALSE)
+boxplot(subdg$yearOfRegistration,col="blue",outline = FALSE)
+
+```
+
+## T-Test
+```{r}
+t.test(subdg$price, subdg$yearOfRegistration, alternative="greater", paired=TRUE)
+t.test(subdg$price, subdg$kilometer, alternative="greater", paired=TRUE)
+t.test(subdg$price, subdg$powerPS, alternative="greater", paired=TRUE)
+
+```
+
+## Chi-Squared Test
+```{r}
+
+chisq.test(subdg$price,subdg$gearbox)
+
+chisq.test(subdg$price,subdg$kilometer)
+
+chisq.test(subdg$price,subdg$yearOfRegistration)
+chisq.test(subdg$price,subdg$powerPS)
+chisq.test(subdg$price,subdg$fuelType)
+
+chisq.test(subdg$price,subdg$notRepairedDamage)
+chisq.test(subdg$price,subdg$abtest)
+chisq.test(subdg$price,subdg$monthOfRegistration)
+chisq.test(subdg$price,subdg$postalCode)
+chisq.test(subdg$price,subdg$model)
+```
+
+## Correlation Test
+
+```{r }
+
+cor.test(subdg$price,subdg$yearOfRegistration)
+cor.test(subdg$price,subdg$powerPS)
+cor.test(subdg$price,subdg$kilometer)
+```
+
+
+
+## Converting categorical values to factor
+
+```{r }
+
+subdg$gearbox
+subdg$gearbox.f <- factor(subdg$gearbox)
+is.factor(subdg$gearbox.f)
+subdg$gearbox.f[1:2]
+
+```
+
+```{r }
+
+subdg$fuelType
+subdg$fuelType.f <- factor(subdg$fuelType)
+is.factor(subdg$fuelType.f)
+subdg$fuelType.f[1:7]
+
+```
+
+```{r }
+
+subdg$notRepairedDamage
+subdg$notRepairedDamage.f <- factor(subdg$notRepairedDamage)
+is.factor(subdg$notRepairedDamage.f)
+subdg$notRepairedDamage.f[1:2]
+
+```
+
+## Linear regression
+```{r }
+summary(lm(subdg$price ~ gearbox.f + powerPS + kilometer +yearOfRegistration +fuelType.f +notRepairedDamage.f, data = subdg))
+
+```
+
+
+## linear model Plots
+```{r}
+library(ggplot2)
+ggplot(subdg,aes(kilometer, price)) + geom_point() + geom_smooth(method ="lm")+xlab("Mileage") + ylab("Price")
+
+ggplot(subdg,aes(powerPS,price)) + geom_point() + geom_smooth(method = "lm")+xlab("Horsepower") + ylab("Price")
+
+ggplot(subdg,aes(yearOfRegistration, price)) + geom_point() + geom_smooth(method = "lm")+xlab("Year Of Registration") + ylab("Price")
+
+```
+
+## correlation plot
+```{r}
+library(corrplot)
+subdg$dateCrawled<-subdg$name<-subdg$seller<-subdg$offerType<-subdg$abtest<-subdg$gearbox<-subdg$model<-subdg$fuelType<- subdg$notRepairedDamage<-subdg$dateCreated<-subdg$nrOfPictures<-subdg$postalCode<-subdg$lastSeen<-subdg$vehicleType<-subdg$brand<-subdg$gearbox.f<-subdg$fuelType.f<-subdg$notRepairedDamage.f<-subdg$monthOfRegistration<- NULL
+data(subdg) 
+M <- cor(subdg) 
+
+corrplot(M, type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+
+```
+
+## Scatter matrix plot
+
+```{r}
+pairs(~price+powerPS + kilometer +yearOfRegistration ,data=subdg, main="Price Predictor Matrix",col="blue")
+
+```
